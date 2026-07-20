@@ -1,0 +1,11 @@
+target/
+dist/
+node_modules/
+__pycache__/
+*.pyc
+.env
+*.so
+*.dll
+*.dylib
+.nexus/
+*.exe

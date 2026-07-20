@@ -1,0 +1,84 @@
+name: Nexus CI
+on: [push, pull_request]
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+      - run: cargo build --release
+        working-directory: rust
+      - run: cargo test
+        working-directory: rust
+      - run: cargo build --target wasm32-unknown-unknown --release
+        working-directory: rust
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: go build ./...
+        working-directory: go
+      - run: go vet ./...
+        working-directory: go
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install numpy requests
+        working-directory: python
+      - run: python -c "from nexus import export; print('nexus-py OK')"
+        working-directory: python
+      - run: python examples/pipeline.py
+        working-directory: python
+
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+        working-directory: ts
+      - run: npx tsc --noEmit
+        working-directory: ts
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: [rust, go, python, typescript]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: pip install numpy requests
+      - run: |
+          cd go && go run ./cmd/nexusd &
+          sleep 2
+          cd ../python && python -c "
+import requests
+r = requests.post('http://localhost:8080/api/v1/call', json={'function':'math.add','args':[1,2,3]})
+assert r.json()['result'] == 6.0, f'Expected 6.0 got {r.json()}'
+print('Integration test passed: Go daemon + Python client')
+"
