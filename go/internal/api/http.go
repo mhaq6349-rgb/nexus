@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/muhammad/nexus/go/internal/runtime"
-	"github.com/muhammad/nexus/go/internal/scheduler"
-	"github.com/muhammad/nexus/go/internal/types"
+	"github.com/muhammad/nexus/internal/runtime"
+	"github.com/muhammad/nexus/internal/scheduler"
+	"github.com/muhammad/nexus/internal/types"
 )
 
 type Server struct {

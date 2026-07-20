@@ -90,8 +90,8 @@ func ValF64From(v float64) Value   { return Value{Type: ValF64, F64: v} }
 func ValStr(s string) Value        { return Value{Type: ValString, String: s} }
 func ValI64From(v int64) Value     { return Value{Type: ValI64, I64: v} }
 func ValNullValue() Value          { return Value{Type: ValNull} }
-func ValBytes(b []byte) Value      { return Value{Type: ValBytes, Bytes: b} }
-func ValBool(b bool) Value         { return Value{Type: ValBool, Bool: b} }
+func NewBytesVal(b []byte) Value   { return Value{Type: ValBytes, Bytes: b} }
+func NewBoolVal(b bool) Value      { return Value{Type: ValBool, Bool: b} }
 
 func (v Value) AsF64() (float64, bool) {
 	if v.Type == ValF64 { return v.F64, true }
@@ -142,7 +142,7 @@ func UnmarshalValue(b []byte) (Value, int, error) {
 	case 0:
 		return ValNullValue(), 1, nil
 	case 1:
-		return ValBool(b[1] != 0), 2, nil
+		return NewBoolVal(b[1] != 0), 2, nil
 	case 2:
 		return ValI64From(int64(binary.LittleEndian.Uint64(b[1:9]))), 9, nil
 	case 4:

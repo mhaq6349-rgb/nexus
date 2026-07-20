@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/muhammad/nexus/go/internal/types"
+	"github.com/muhammad/nexus/internal/types"
 )
 
 type Scheduler struct {
@@ -148,18 +148,14 @@ func (s *Scheduler) InitDefault() {
 			data[i*4+3] = byte(bits >> 24)
 			_ = binary
 		}
-		return types.ValBytes(data), nil
+		return types.NewBytesVal(data), nil
 	})
 	s.Register("data.filter", types.LangGo, func(args []types.Value) (types.Value, error) {
 		if len(args) < 1 { return types.ValNullValue(), fmt.Errorf("need data") }
 		data, _ := args[0].AsStr()
-		threshold := 500.0
-		if len(args) > 1 { threshold, _ = args[1].AsF64() }
+		if len(args) > 1 { _, _ = args[1].AsF64() }
 
-		// Manual SIMD-like processing in Go
-		result := make([]byte, 0)
-		_ = data
-		return types.ValBytes(result), nil
+		return types.NewBytesVal([]byte(data)), nil
 	})
 	s.Register("http.fetch", types.LangGo, func(args []types.Value) (types.Value, error) {
 		url := ""

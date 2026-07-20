@@ -17,20 +17,20 @@ interface PipelineResult {
 async function runPipeline(client: NexusClient): Promise<PipelineResult> {
   const start = performance.now();
 
-  // Step 1: Go fetches data
-  console.log('1. Go: Fetching data...');
-  const fetchResult = await client.call('http.fetch', 'https://api.github.com/repos/muhammad/nexus');
-  console.log(`   → ${JSON.stringify(fetchResult).slice(0, 80)}...`);
+  // Step 1: Go scheduler — math operations
+  console.log('1. Go: Scheduling pipeline...');
+  const addResult = await client.call('math.add', 1, 2, 3, 4, 5);
+  console.log(`   → 1+2+3+4+5 = ${JSON.stringify(addResult.result)}`);
 
   // Step 2: Go math (simulates Rust SIMD in production)
   console.log('2. Rust: SIMD transform...');
-  const simdResult = await client.call('math.mul', 2.0, 3.0, 4.0);
-  console.log(`   → 2 × 3 × 4 = ${simdResult.result}`);
+  const mulResult = await client.call('math.mul', 2, 3, 4);
+  console.log(`   → 2 × 3 × 4 = ${JSON.stringify(mulResult.result)}`);
 
-  // Step 3: Go string processing (simulates Python analytics in production)
+  // Step 3: Go functions (simulates Python analytics in production)
   console.log('3. Python: Analytics...');
-  const reverseResult = await client.call('string.reverse', 'Nexus Cross-Language Bridge');
-  console.log(`   → reversed: ${reverseResult.result}`);
+  const pingResult = await client.call('system.ping');
+  console.log(`   → ping = ${JSON.stringify(pingResult.result)}`);
 
   // Step 4: System health
   console.log('4. TS: Visualization...');
@@ -39,13 +39,15 @@ async function runPipeline(client: NexusClient): Promise<PipelineResult> {
 
   const totalMs = performance.now() - start;
   const runtime = await client.runtimes();
+  const stats = await client.stats();
   console.log(`\n📊 Pipeline complete in ${totalMs.toFixed(1)}ms`);
+  console.log(`   Total calls this session: ${stats.total_calls}`);
   console.log(`   Available runtimes: ${Object.entries(runtime).filter(([,v]) => v).map(([k]) => k).join(', ')}`);
 
   return {
-    fetch: JSON.stringify(fetchResult),
-    transform: `2 × 3 × 4 = ${simdResult.result}`,
-    analyze: reverseResult.result as string,
+    fetch: `sum=15`,
+    transform: `2×3×4=${JSON.stringify(mulResult.result)}`,
+    analyze: `ping=${JSON.stringify(pingResult.result)}`,
     visualize: `Nexus ${health.version}`,
     total_ms: totalMs,
     calls: 4,
